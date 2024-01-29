@@ -9,5 +9,5 @@ const taskSchema = new mongoose.Schema({
 
 
 module.exports = {
-    taskSchema,
+  taskSchema,
 };

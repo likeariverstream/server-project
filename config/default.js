@@ -4,5 +4,5 @@ module.exports = {
       port: 3000,
     },
   },
-  mongodb: 'mongodb://mongodb/mongodb',
+  mongodb: 'mongodb://admin:pass@localhost:27017/sample?authSource=admin',
 };

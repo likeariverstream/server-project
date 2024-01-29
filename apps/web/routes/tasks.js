@@ -32,35 +32,34 @@ tasksRouter.get('/list/:serverId', async (req, res) => {
   }
 });
 function getRandomInt(min, max) {
-    return min + Math.floor(Math.random() * (max-min));
+  return min + Math.floor(Math.random() * (max-min));
 }
-tasksRouter.get('/add-random',async(req,res)=>{
-    try{
-        console.log('get tasks/add-random');
-        const servers = await Server.find({});
-        console.log('servers.length', servers.length);
-        const amountOfTasks = getRandomInt(10, 100);
-        console.log('amountOfTasks',amountOfTasks);
-        for(let i=0; i<amountOfTasks; i++){
-            const server = servers[getRandomInt(0, servers.length)];
-            await Task.create({
-                serverId: server._id,
-                date: moment(
-                    moment().format('YYYY-MM-DD 00:00:00'),
-                    'YYYY-MM-DD HH:mm:ss'
-                    ).add(getRandomInt(0,86400),'seconds').format('YYYY-MM-DD HH:mm:ss'),
-                name: `Task ${getRandomInt(0,10)}:${getRandomInt(0,10)}`,
-                completeDuration: getRandomInt(1,100),
-                isComplete: Math.random() > 0.20,
-            });
-        }
-        res.json({});
-    }catch(err){
-        console.log(err);
-        res.status(500).send('');
+tasksRouter.get('/add-random', async (req, res)=>{
+  try {
+    console.log('get tasks/add-random');
+    const servers = await Server.find({});
+    console.log('servers.length', servers.length);
+    const amountOfTasks = getRandomInt(10, 100);
+    console.log('amountOfTasks', amountOfTasks);
+    for (let i=0; i<amountOfTasks; i++) {
+      const server = servers[getRandomInt(0, servers.length)];
+      await Task.create({
+        serverId: server._id,
+        date: moment(
+            moment().format('YYYY-MM-DD 00:00:00'),
+            'YYYY-MM-DD HH:mm:ss',
+        ).add(getRandomInt(0, 86400), 'seconds').format('YYYY-MM-DD HH:mm:ss'),
+        name: `Task ${getRandomInt(0, 10)}:${getRandomInt(0, 10)}`,
+        completeDuration: getRandomInt(1, 100),
+        isComplete: Math.random() > 0.20,
+      });
     }
+    res.json({});
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('');
+  }
 });
-
 
 
 module.exports = {

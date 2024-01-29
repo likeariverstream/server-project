@@ -34,6 +34,7 @@
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.23.9",
     "babel-loader": "^9.1.0",
     "css-loader": "^6.7.3",
     "eslint": "^8.29.0",

@@ -31,5 +31,5 @@ export default function stateConfig($stateProvider, $urlRouterProvider) {
         name: 'charts',
         url: '/charts',
         component: 'chartsMain',
-      })
+      });
 }

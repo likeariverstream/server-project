@@ -33,8 +33,6 @@ journalsRouter.get('/user-actions/:serverId', async (req, res) => {
 });
 
 
-
-
 module.exports = {
   journalsRouter,
 };

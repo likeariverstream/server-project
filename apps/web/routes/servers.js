@@ -109,6 +109,31 @@ serversRouter.get('/:id/stop', async (req, res) => {
   }
 });
 
+serversRouter.get('/:id/restart', async (req, res) => {
+  try {
+    console.log('get restart servers id ', req.params.id);
+    const server = await Server.findOne({
+      _id: req.params.id,
+    });
+    server.status = 'stoped';
+    await server.save();
+    console.log('stopped servers id ', req.params.id);
+    server.status = 'started';
+    server.save();
+    console.log('started servers id ', req.params.id);
+    await UserAction.create({
+      serverId: req.params.id,
+      date: moment().format('YYYY-MM-DD HH:mm:ss'),
+      user: 'Тестовый пользователь',
+      action: 'Пользователь перезапустил сервер',
+    });
+    res.json(server);
+  } catch (err) {
+    console.log(err);
+    res.json({});
+  }
+});
+
 module.exports = {
   serversRouter,
 };

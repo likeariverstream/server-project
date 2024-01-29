@@ -1,68 +1,86 @@
-export const serversModule = angular.module('servers',[])
-.component('serversList', {
-    templateUrl: '/partials/servers/list',
-    controller:[
+export const serversModule = angular.module('servers', [])
+    .component('serversList', {
+      templateUrl: '/partials/servers/list',
+      controller: [
         'Server',
         'Task',
         'NotificationService',
-        function(Server, Task, NotificationService){
-            this.servers = Server.query();
-            this.addTasks = function(){
-                if(confirm('Вы хотите добавить задания?')){
-                    Task.addRandom(function(){
-                        NotificationService.showSuccess('Задания добавленны')
-                    });
-                }
+        function(Server, Task, NotificationService) {
+          this.servers = Server.query();
+          this.addTasks = function() {
+            if (confirm('Вы хотите добавить задания?')) {
+              Task.addRandom(function() {
+                NotificationService.showSuccess('Задания добавлены');
+              });
             }
-    }]
-}).component('serversEdit', {
-    templateUrl: '/partials/servers/edit',
-    controller:[
+          };
+        }],
+    }).component('serversEdit', {
+      templateUrl: '/partials/servers/edit',
+      controller: [
         'Server',
         '$stateParams',
         '$state',
         'NotificationService',
-        function(Server, $stateParams, $state, NotificationService){
-            if($stateParams.id){
-                this.server = Server.get({id:$stateParams.id});
-            }else{
-                this.server = new Server();
-            }
-            this.save = function(){
-                this.server.$save(function(){
-                    NotificationService.showSuccess('Сервер сохранен')
-                    $state.go('servers',{},{reload: true});
-                })
-            }
-            
-    }]
-}).component('serversView', {
-    templateUrl: '/partials/servers/view',
-    controller:[
+        function(Server, $stateParams, $state, NotificationService) {
+          if ($stateParams.id) {
+            this.server = Server.get({id: $stateParams.id});
+          } else {
+            this.server = new Server();
+          }
+          this.save = function() {
+            this.server.$save(function() {
+              NotificationService.showSuccess('Сервер сохранен');
+              $state.go('servers', {}, {reload: true});
+            });
+          };
+        }],
+    }).component('serversView', {
+      templateUrl: '/partials/servers/view',
+      controller: [
         'Server',
         '$stateParams',
         'NotificationService',
         'Charts',
-        function(Server, $stateParams, NotificationService, Charts){
-            this.server = Server.get({id: $stateParams.id});
-            this.charts = Charts.serverCharts({serverId: $stateParams.id});
-            this.start = function(){
-                if(confirm('Вы хотите запустить сервер?')){
-                    this.server.$start(function(){
-                        NotificationService.showSuccess('Сервер запущен')
-                    })
-                }
+        'Journals',
+        'journalsTableService',
+        function(
+            Server, $stateParams, NotificationService, Charts, Journals, journalsTableService,
+        ) {
+          this.server = Server.get({id: $stateParams.id});
+          this.charts = Charts.serverCharts({serverId: $stateParams.id});
+          this.journals = Journals.userActions({serverId: $stateParams.id});
+          this.start = function() {
+            if (confirm('Вы хотите запустить сервер?')) {
+              this.server.$start(function() {
+                NotificationService.showSuccess('Сервер запущен');
+              });
             }
-            this.stop = function(){
-                if(confirm('Вы хотите остановить сервер?')){
-                    this.server.$stop(function(){
-                        NotificationService.showSuccess('Сервер остановлен')
-                    })
-                }
+          };
+          this.stop = function() {
+            if (confirm('Вы хотите остановить сервер?')) {
+              this.server.$stop(function() {
+                NotificationService.showSuccess('Сервер остановлен');
+              });
             }
-    }]
-}).directive('serverUserActionTable', [
-      '$compile', 'dataTableLanguage', function($compile, dataTableLanguage) {
+          };
+          this.restart = function() {
+            if (confirm('Вы хотите перезапустить сервер?')) {
+              this.server.$restart(function() {
+                NotificationService.showSuccess('Сервер перезапущен');
+              });
+            }
+          };
+          this.reloadJournals = function() {
+            const tableInstance = journalsTableService.getInstance();
+            if (tableInstance) {
+              tableInstance.ajax.reload();
+            }
+          };
+        }],
+    }).directive('serverUserActionTable', [
+      '$compile', 'dataTableLanguage', 'journalsTableService',
+      function($compile, dataTableLanguage, journalsTableService) {
         return {
           restrict: 'A',
           scope: {
@@ -96,6 +114,7 @@ export const serversModule = angular.module('servers',[])
                 $compile(angular.element(row).contents())(localScope);
               },
             });
+
             dt.columns().every(function() {
               const that = this;
               $('input', this.header()).on('change', function() {
@@ -112,10 +131,12 @@ export const serversModule = angular.module('servers',[])
             dt.on('draw', function() {
               scope.onDraw({params: dt.ajax.params()});
             });
+            journalsTableService.setInstance(dt);
           },
         };
       }]).directive('serverTasksTable', [
-      '$compile', 'dataTableLanguage', function($compile, dataTableLanguage) {
+      '$compile', 'dataTableLanguage',
+      function($compile, dataTableLanguage) {
         return {
           restrict: 'A',
           scope: {
@@ -143,7 +164,7 @@ export const serversModule = angular.module('servers',[])
                 },
                 {
                   data: 'isComplete',
-                  render:function(row,data,full){
+                  render: function(row, data, full) {
                     return full.isComplete? 'Да': 'Нет';
                   },
                 },
@@ -174,55 +195,55 @@ export const serversModule = angular.module('servers',[])
           },
         };
       }])
-      .component('tasksChart', {
-        templateUrl: '/partials/servers/default-chart',
-        bindings: {
-          report: '<',
-        },
-        controller: [
-          function() {
-            this.$onInit = function() {
-              this.chartParams = {
-                type: 'bar',
-                data: {
-                  datasets: [
-                    {
-                      label: 'Выполненные',
-                      data: this.report.complete,
-                      backgroundColor: this.report.complete.map(function() {
-                        return '#0000ff';
-                      }),
-                    },
-                    {
-                      label: 'Невыполненные',
-                      data: this.report.notComplete,
-                      backgroundColor: this.report.notComplete.map(function() {
-                        return '#ff0000';
-                      }),
-                    },
-                  ],
-  
-                  labels: this.report.labels,
-                },
-                options: {
-                  responsive: true,
-                  legend: {
-                    display: false,
-                    position: 'left',
+    .component('tasksChart', {
+      templateUrl: '/partials/servers/default-chart',
+      bindings: {
+        report: '<',
+      },
+      controller: [
+        function() {
+          this.$onInit = function() {
+            this.chartParams = {
+              type: 'bar',
+              data: {
+                datasets: [
+                  {
+                    label: 'Выполненные',
+                    data: this.report.complete,
+                    backgroundColor: this.report.complete.map(function() {
+                      return '#0000ff';
+                    }),
                   },
-                  scales: {
-                    x: {
-                      stacked: false,
-                      beginAtZero: true,
-                    },
-                    y: {
-                      stacked: false,
-                      min: 0,
-                    },
+                  {
+                    label: 'Невыполненные',
+                    data: this.report.notComplete,
+                    backgroundColor: this.report.notComplete.map(function() {
+                      return '#ff0000';
+                    }),
+                  },
+                ],
+
+                labels: this.report.labels,
+              },
+              options: {
+                responsive: true,
+                legend: {
+                  display: false,
+                  position: 'left',
+                },
+                scales: {
+                  x: {
+                    stacked: false,
+                    beginAtZero: true,
+                  },
+                  y: {
+                    stacked: false,
+                    min: 0,
                   },
                 },
-  
-              };
+              },
+
             };
-          }],
-      });
+          };
+        }],
+    });
