@@ -119,7 +119,7 @@ serversRouter.get('/:id/restart', async (req, res) => {
     await server.save();
     console.log('stopped servers id ', req.params.id);
     server.status = 'started';
-    server.save();
+    await server.save();
     console.log('started servers id ', req.params.id);
     await UserAction.create({
       serverId: req.params.id,
